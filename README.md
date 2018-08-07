@@ -1,5 +1,5 @@
-# awk-it
-AWK It! - interactive AWK completion in Emacs
+# AWK It!
+Interactive AWK completion in Emacs
 
 AWK It! allows you to see AWK output as you are typing the script; it sends selected region to awk and uses yasnippet as interactive UI.
 
