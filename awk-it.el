@@ -280,7 +280,6 @@ specific issues!"
   :group 'awk-it)
 
 
-
 (defvar awk-it-fs awk-it-default-separator "AWK field separator.")
 
 (defvar awk-it-type awk-it-default-mode "Type of code (1 - simplified; 2 - raw single match; 3 - full raw).")
@@ -453,32 +452,6 @@ AWK pattern: ${1:"(if file (replace-regexp-in-string "\\(\\$\\|`\\)" "\\\\\\1" a
 ${1:$(" (symbol-name func) " text)}") beg end)))
 
 
-; original awk-it-process
-
-;(defun awk-it-process (code)
-;  "Sends AWK code and data to the shell."
-;  (let ((result "")
-;        (coding-system-for-read awk-it-encoding)
-;        (coding-system-for-write awk-it-encoding))
-;    (setq awk-it-code code
-;          result (shell-command-to-string (concat
-;      "echo \"" awk-it-data "\" | awk -v auto_quote=\"'\" ' "
-;      (replace-regexp-in-string "'" "\" auto_quote \""
-;        (cond
-;         ((= awk-it-type 1)
-;          (awk-it-single-2-raw (awk-it-simple-2-single code)))
-;         ((= awk-it-type 2)
-;          (awk-it-single-2-raw code))
-;         ((= awk-it-type 3)
-;          code)))
-;      " ' ")))
-;    (when (< 0 (length result))
-;      (setq result (substring result 0 (- (length result) 1))))
-;    (setq awk-it-count (length result))
-;    result))
-
-
-
 (defun awk-it-execute (string)
   (cond
    ((eq awk-it-shell-mode 'unix)
@@ -486,69 +459,13 @@ ${1:$(" (symbol-name func) " text)}") beg end)))
    ((eq awk-it-shell-mode 'win)
     (message "-----------------------------------------------------------------")
     (message string)
-    ;(setq string (replace-regexp-in-string "\\\\\"" "\\\\\\\\\"" string))
     (with-output-to-string
       (with-current-buffer
           standard-output
         (let ((shell-file-name "c://WINDOWS/system32/cmd.exe")
               (shell-command-switch "/c"))
           (apply 'call-process shell-file-name nil t nil (append '("/c") (awk-it-split-by-space string)))))))
-          ;(apply 'call-process shell-file-name nil t nil (append '("/c")
-          ;                                                       (mapcar (lambda (x)
-          ;                                                                 (replace-regexp-in-string "\\\\\\\\\"" "\\\\\"" x))
-          ;                                                       (awk-it-split-by-space string))))))))
    (t "i duno!")))
-
-
-
-;(call-process "c://WINDOWS/system32/cmd.exe" nil t nil
-;              "/c"
-;              "echo" "one" "two" "|" "gawk"
-;              "'" "/.*/" "{" "print" "hello " "$1;" "}" "'")
-
-;(apply 'call-process "c://WINDOWS/system32/cmd.exe" nil t nil
-;       (append
-;        '("/c")
-;        (awk-it-split-by-space "echo one two | gawk ' /.*/ { print \"hello \" $1; } '")))
-
-
-
-;(apply 'call-process "c://WINDOWS/system32/cmd.exe" nil t nil
-;       (append
-;        '("/c")
-;        (awk-it-split-by-space "echo one two | gawk ' /.*/ { print \"hello my \"name is\" \" $1; } '")))
-
-;(message (pp (awk-it-split-by-space
-;"(echo gfsrg herh theth&&echo.hetrh thte het&&echo.trher ehet heth&&echo.)  | gawk -v auto_quote=\"'\" '
-;$0 !~ /^$/ {
-;    print \"pattern\";
-;}
-;
-;/^$/ { print }
-;
-;
-;function l(x) { return tolower(x); }
-;function u(x) { return toupper(x); }
-;function fu(x) { return toupper(substr(x, 0, 1))  substr(x, 2); }
-;function fl(x) { return tolower(substr(x, 0, 1))  substr(x, 2); }
-;'")))
-
-
-
-;gfsrg herh theth
-;hetrh thte het
-;trher ehet heth
-
-
-
-
-
-
-
-
-
-
-
 
 
 (defun awk-it-echo (string)
@@ -563,7 +480,6 @@ ${1:$(" (symbol-name func) " text)}") beg end)))
 (defun stp(txt)
   (set-text-properties 0 (length txt) nil txt)
       txt)
-
 
 
 (defun awk-it-process (code)
@@ -779,7 +695,6 @@ code (if any) from AWK code in STRING."
     (list fs (awk-it-return-strings code strings))))
 
 
-
 ; ---[ Utility ]------------------------------------------------------------------------------------------------------------
 
 
@@ -825,52 +740,6 @@ in STRINGS."
   (concat (substring string 0 i) new-txt (substring string (+ i 1) (length string))))
 
 
-
-;(defun awk-it-split-by-space (string)
-;  (let ((list ())
-;        (y "x")
-;        (i 1)
-;        (start 0)
-;        (end 0)
-;        (offset 0)
-;        in
-;        between)
-;    (while (< i (length string))
-;      (let ((x (substring string i (+ i 1))))
-;        (cond
-;         ((and (string= x "\"")
-;               (not (string= y "\\")))
-;          (setq in (not in)))
-;         ((string= x "
-;")
-;          (if in
-;              (setq string (awk-it-replace-at string i "\n\
-;"))
-;            (when (not between)
-;              (setq end (- i (if (string= y "\"") 1 0))))
-;            (setq between t)))
-;         ((and (string= x " ")
-;               (not in))
-;          (when (not between)
-;            (setq end (- i (if (string= y "\"") 1 0))))
-;          (setq between t)
-;          (when (string= "\"" (substring string (- i 1) i))
-;            (setq string (concat (substring string 0 (- i 1)) "_AWKIT _" (substring string (- i 1) (length string))))
-;            (setq offset 8)
-;            ))
-;         (t (when between
-;              (setq between ()
-;                    end (+ end offset)
-;                    i (+ i offset)
-;                    list (cons (substring string start end) list)
-;                    start i
-;                    offset 0))))
-;        (setq y x))
-;      (incf i))
-;    (setq list (cons (substring string start (length string)) list))
-;    (nreverse list)))
-;
-
 (defun awk-it-split-by-space (string)
   (let ((list ())
         (y "x")
@@ -914,7 +783,6 @@ in STRINGS."
       (incf i))
     (setq list (cons (substring string start (length string)) list))
     (nreverse list)))
-
 
 
 (defun awk-it-n-regex-replace (string list &optional literal)
